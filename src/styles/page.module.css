@@ -1,0 +1,6 @@
+.container {
+    width: 100%;
+    min-height: 100dvh;
+    background-color: var(--background);
+    font-family: var(--font-montserrat);
+}

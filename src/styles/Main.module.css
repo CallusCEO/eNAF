@@ -1,0 +1,225 @@
+@keyframes float-arrow {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translate(-50%, -50%) translateY(0);
+    }
+
+    50% {
+        transform: translate(-50%, -50%) translateY(-20px);
+    }
+}
+
+@keyframes enter {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+        filter: blur(10px);
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+        filter: blur(0px);
+    }
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    min-height: 100dvh;
+
+    padding-top: clamp(164px, 30vw, 224px);
+    overflow: hidden;
+
+    position: relative;
+}
+
+.title {
+    color: var(--foreground);
+    font-size: clamp(20px, 6vw, 48px);
+    font-weight: 600;
+    z-index: 10;
+}
+
+.titleSpecial {
+    color: #62b0ff;
+    font-size: clamp(22px, 7vw, 52px);
+    font-weight: 700;
+    margin-top: -8px;
+    z-index: 11;
+}
+
+.subTitle {
+    font-size: clamp(16px, 3vw, 26px);
+    font-weight: 600;
+    margin-top: 8px;
+
+    opacity: 0;
+    animation: 1s ease enter forwards;
+    animation-delay: 0.3s;
+}
+
+.productContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    margin: 324px auto 64px;
+    width: clamp(264px, 80vw, 664px);
+    z-index: 15;
+}
+
+.productTitleContainer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.productTitle {
+    color: var(--foreground);
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.productTitleIcon {
+    opacity: 0;
+    animation: 1s ease enter forwards;
+}
+
+.productTitleHeader {
+    color: var(--foreground);
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.productBox {
+    width: 100%;
+    opacity: 0;
+    animation: 1s ease enter forwards;
+}
+
+.productHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    border-radius: 20px 20px 0 0;
+    border: 2px dashed #bbb;
+
+    padding: 8px 16px;
+}
+
+.productBody {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 264px;
+    width: 100%;
+    border-radius: 0 0 20px 20px;
+    border: 2px dashed #bbb;
+    border-top: none;
+
+    padding: 8px 16px;
+}
+
+.productTextBody {
+    color: var(--foreground);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.productButton {
+    cursor: pointer;
+    border-radius: 10px;
+    border: 1px solid #bbb;
+    padding: 4px 16px;
+    color: var(--foreground);
+    font-weight: 500;
+    margin-top: 16px;
+
+    transition: background-color 0.2s;
+
+    opacity: 0;
+    animation: 1s ease enter forwards;
+}
+
+.productBodyInputContainer {
+    display: flex;
+    width: 100%;
+    max-width: 24rem;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+
+    opacity: 0;
+    animation: 1s ease enter forwards;
+}
+
+/* Additional styles */
+
+.arrowDown {
+    pointer-events: none;
+    animation: float-arrow 3s ease-in-out infinite;
+    margin-top: 10dvh;
+}
+
+.lightFour {
+    position: absolute;
+    top: 80%;
+    left: 70%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle at center, rgba(102, 102, 255, 0.3), transparent 70%);
+    z-index: 0;
+    pointer-events: none;
+    animation: float 10s ease-in-out infinite;
+}
+
+.lightFive {
+    position: absolute;
+    top: clamp(124px, 50%, 324px);
+    left: 30%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle at center, rgba(102, 102, 255, 0.5), transparent 70%);
+    z-index: 0;
+    pointer-events: none;
+    animation: float 10s ease-in-out infinite;
+}
+
+/* media queries */
+
+@media (hover: hover) and (pointer: fine) {
+    .productButton:hover {
+        background-color: #9bcdff;
+    }
+}
+
+@media (max-width: 350px) {
+    .productTitleHeader {
+        font-size: 14px;
+    }
+
+    .productContainer {
+        width: 95%;
+    }
+}
