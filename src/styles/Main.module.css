@@ -172,6 +172,22 @@
     animation: 1s ease enter forwards;
 }
 
+
+.infoMessage {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.invalidEmail {
+    color: #ff6666;
+}
+
+.validEmail {
+    color: #66ff66;
+}
+
 /* Additional styles */
 
 .arrowDown {
