@@ -22,6 +22,19 @@ import { Loader2Icon } from "lucide-react"
 import { handleStringLen } from "@/lib/handleStringLen";
 import { processTextToEmail } from "@/lib/processTextToEmail";
 import { sliceEmail } from "@/lib/sliceEmail";
+import {
+    Table,
+    TableBody,
+    TableCaption,
+    TableCell,
+    TableFooter,
+    TableHead,
+    TableHeader,
+    TableRow,
+  } from "@/components/ui/table"
+import { selectData } from "@/lib/selectData";
+import { downloadFile } from "@/lib/downloadFile";
+
 
 export default function Main() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -30,17 +43,19 @@ export default function Main() {
   const [method, setMethod] = useState<string | null>("txt");
 
   const [email, setEmail] = useState<string>("");
-
+  const [dataMails, setDataMails] = useState<any>([]);
   const [textToProcess, setTextToProcess] = useState<string>("");
 
   //state for animation
   const [isProcessing, setIsProcessing] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
 
   // Call the API with enhanced error handling
   const searchCompany = async (companyName: string) => {
     try {
-        console.log(`Fetching data for company: ${companyName}`);
-        const response = await fetch(`/api/insee?companyName=${encodeURIComponent(companyName)}`);
+        setMessage(`Fetching data for ${companyName.charAt(0).toUpperCase() + companyName.slice(1)}`);
+        const response = await fetch(`/api/insee?companyName=${companyName}`);
         
         // Get the response text first to handle both JSON and text responses
         const responseText = await response.text();
@@ -50,6 +65,7 @@ export default function Main() {
             responseData = responseText ? JSON.parse(responseText) : {};
         } catch (e) {
             console.error('Failed to parse response as JSON:', responseText);
+            setMessage('Failed task, try later.')
             throw new Error(`Invalid response format: ${responseText.substring(0, 100)}...`);
         }
         
@@ -77,44 +93,54 @@ export default function Main() {
         });
         throw error; // Re-throw to allow error handling in the calling code
     }
-  };
+};
+
+const processAllMails = async (list: {
+    name: string;
+    domain: string;
+    company: string;
+}[]) => {
+    let dataMails = [];
+    for (const mail of list) {
+        const dataCurr = await searchCompany(mail.company);
+        const dataCurrSorted = {...selectData({name: mail.name, company: mail.company, ...dataCurr})};
+        dataMails.push(dataCurrSorted);
+    }
+    return dataMails;
+}
 
   const readFile = async () => {
-
     try {
-        // check if email was written manually and process it
         if (checkEmail(email)) {
             setIsProcessing(true);
-            return email
-        }
+            const data = await processAllMails([sliceEmail(email)]); // to modify
+            setIsProcessing(false);
+            setDataMails(data);
+            console.log("Companies processed:", data);
 
-        // read file
-        if (selectedFile !== null) {
+        } else if (selectedFile !== null) {
             setIsProcessing(true);
-            
-            if (selectedFile.name.endsWith('.pdf')) {
-                // const pdf = require('pdf-parse');
-                // const data = await pdf(selectedFile);
-                // setTextToProcess(data.text);
-            } else {
-                const fileContent = await new Promise<string>((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => resolve(e.target?.result as string);
-                    reader.onerror = () => reject(reader.error);
-                    reader.readAsText(selectedFile!);
-                });
+            const fileContent = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target?.result as string);
+            reader.onerror = () => reject(reader.error);
+            reader.readAsText(selectedFile!);
+            });
 
-                // setTextToProcess(fileContent);
-                const mailsArr = processTextToEmail(fileContent);
-                const mailsArrProcessed = mailsArr.map((mail) => sliceEmail(mail));
-                console.log(mailsArrProcessed);
-                searchCompany('UNITEL');
-            }
+            const mailsArr = processTextToEmail(fileContent);
+            const mailsArrCutToCompany = mailsArr.map((mail) => sliceEmail(mail));
+            const data = await processAllMails(mailsArrCutToCompany);
+            setDataMails(data);
+            setIsProcessing(false);
+            setMessage("Task completed")
+            
+            console.log("Companies processed:", data);
         }
     } catch (err) {
-        console.log("An error occured please try again.")
+        setIsProcessing(false);
+        console.log("An error occured please try again.");
     }
-  }
+  };
 
   const buttonHandlingUI = () => {
 
@@ -182,20 +208,32 @@ export default function Main() {
   
   const textHandlingUI = () => {
 
-    if (isProcessing) {
-        return <Text variant='shine' className={styles.productTextBody + ' ' + styles.productTitleIcon}>Your {checkEmail(email) ? "email" : "file"} is being processed...</Text>
+    if (isProcessing && !message) {
+        return <Text variant='shine' className={styles.productTextBody + ' ' + styles.productTitleIcon}>Your {checkEmail(email) ? "email" : "file"} is being processed...</Text>;
     }
 
-    if (selectedFile !== null) {
+    else if (message) {
+        return (
+            <Text
+                key={message} // This will force a re-mount when message changes
+                variant='shine'
+                className={styles.productTextBody + ' ' + styles.productTitleIcon}
+            >
+                {message}
+            </Text>
+        );
+    }
+
+    else if (selectedFile !== null) {
         // display the name of the file
-        return <Text variant="generate-effect" className={styles.productTextBody}>{handleStringLen(selectedFile.name.split('.').slice(0, -1).join('.') ?? '', 0, 20) + '.' + selectedFile.name.split('.').pop()}</Text>
+        return <Text variant="generate-effect" className={styles.productTextBody}>{handleStringLen(selectedFile.name.split('.').slice(0, -1).join('.') ?? '', 0, 20) + '.' + selectedFile.name.split('.').pop()}</Text>;
     }
 
-    if (method === "manual") {
-        return <Text variant="generate-effect" className={styles.productTextBody}>Type an email.</Text>
+    else if (method === "manual") {
+        return <Text variant="generate-effect" className={styles.productTextBody}>Type an email.</Text>;
     }
 
-    return <Text variant="generate-effect" className={styles.productTextBody}>Drag and drop your file.</Text>
+    return <Text variant="generate-effect" className={styles.productTextBody}>Drag and drop your file.</Text>;
   }
 
   return (
@@ -261,10 +299,41 @@ export default function Main() {
                         }}
                         style={{ display: 'none' }}
                     />
-                    {textHandlingUI()}
-                    {buttonHandlingUI()}
+                    {
+                        message === "Task completed" ? 
+                        // table
+                        <Table className={styles.productTitleIcon}>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-[100px]">Name</TableHead>
+                                    <TableHead>Company</TableHead>
+                                    <TableHead>Naf</TableHead>
+                                    <TableHead>Siret</TableHead>
+                                    <TableHead>Found Company</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {dataMails.map((item: any) => (
+                                <TableRow key={item.siret}>
+                                    <TableCell className="font-medium">{item.name}</TableCell>
+                                    <TableCell>{item.company}</TableCell>
+                                    <TableCell>{item.naf}</TableCell>
+                                    <TableCell>{item.siret}</TableCell>
+                                    <TableCell>{item.denominationUniteLegale}</TableCell>
+                                </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                        :
+                        <>
+                            {textHandlingUI()}
+                            {buttonHandlingUI()}
+                        </>
+                    }
+                    
                     
                 </div>
+                {message === 'Task completed' && <Button variant="outline" className={styles.productButtonEnter} onClick={() => downloadFile(dataMails)}>Download CSV</Button>}
             </div>
         </div>
 

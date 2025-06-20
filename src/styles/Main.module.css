@@ -137,6 +137,26 @@
     border-top: none;
 
     padding: 8px 16px;
+
+    max-height: 364px;
+    overflow-y: auto;
+}
+
+.productBody::-webkit-scrollbar {
+    width: 8px;
+}
+
+.productBody::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.productBody::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+
+.productBody::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }
 
 .productTextBody {
