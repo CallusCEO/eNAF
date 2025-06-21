@@ -2,9 +2,9 @@
 
 import styles from "@/styles/Main.module.css";
 import { Text } from "./ui/luxe/text";
-import { ArrowDown } from "lucide-react";
-import { Email, Flag, Info } from "@deemlol/next-icons";
-import { useState, useRef, useEffect } from "react";
+import { ArrowDown, ChevronsUpDown, DownloadIcon } from "lucide-react";
+import {Email, File, Flag, Terminal, Info, XCircle } from "@deemlol/next-icons";
+import { useState, useRef } from "react";
 import {
     Select,
     SelectContent,
@@ -14,7 +14,6 @@ import {
     SelectTrigger,
     SelectValue,
   } from "@/components/ui/select"
-import { div } from "motion/react-client";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { checkEmail } from "@/lib/checkEmail";
@@ -25,13 +24,16 @@ import { sliceEmail } from "@/lib/sliceEmail";
 import {
     Table,
     TableBody,
-    TableCaption,
     TableCell,
-    TableFooter,
     TableHead,
     TableHeader,
     TableRow,
   } from "@/components/ui/table"
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+  } from "@/components/ui/collapsible"
 import { selectData } from "@/lib/selectData";
 import { downloadFile } from "@/lib/downloadFile";
 
@@ -44,11 +46,11 @@ export default function Main() {
 
   const [email, setEmail] = useState<string>("");
   const [dataMails, setDataMails] = useState<any>([]);
-  const [textToProcess, setTextToProcess] = useState<string>("");
 
   //state for animation
   const [isProcessing, setIsProcessing] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>("");
+  const [isOpen, setIsOpen] = useState(true)
 
 
   // Call the API with enhanced error handling
@@ -110,11 +112,13 @@ const processAllMails = async (list: {
 }
 
   const readFile = async () => {
+    setMessage("")
     try {
         if (checkEmail(email)) {
             setIsProcessing(true);
             const data = await processAllMails([sliceEmail(email)]); // to modify
             setIsProcessing(false);
+            setMessage("Task completed")
             setDataMails(data);
             console.log("Companies processed:", data);
 
@@ -137,6 +141,7 @@ const processAllMails = async (list: {
             console.log("Companies processed:", data);
         }
     } catch (err) {
+        setMessage("")
         setIsProcessing(false);
         console.log("An error occured please try again.");
     }
@@ -153,18 +158,19 @@ const processAllMails = async (list: {
         )
     }
 
-    if (selectedFile !== null) {
+    else if (selectedFile !== null) {
         return (
         <button
             onClick={() => readFile()}
             className={styles.productButton}
         >
             Process
+            <Terminal size={16} className="ml-2" /> 
         </button>
         )
     }
 
-    if (method === "manual") {
+    else if (method === "manual") {
         return (
             <>
             <div className={styles.productBodyInputContainer}>
@@ -201,6 +207,7 @@ const processAllMails = async (list: {
             onClick={() => fileInputRef.current?.click()}
             className={styles.productButton}
         >
+            <File size={16} className="mr-1" />
             Select {method}
         </button>
     )
@@ -236,6 +243,13 @@ const processAllMails = async (list: {
     return <Text variant="generate-effect" className={styles.productTextBody}>Drag and drop your file.</Text>;
   }
 
+  const handleResetClick = () => {
+    setMessage(""); 
+    setSelectedFile(null);  
+    if (fileInputRef.current) {
+        fileInputRef.current.value = "" 
+    }
+  }
   return (
     <div className={styles.container}>
         <Text variant="generate-effect" className={styles.title}>Insert a mail</Text>
@@ -259,13 +273,13 @@ const processAllMails = async (list: {
                 <div className={styles.productHeader}>
                     <Text variant="generate-effect" className={styles.productTitleHeader}>Choose a method</Text>
                     <Select defaultValue={method ?? "txt"} onValueChange={(v) => setMethod(v)}>
-                        <SelectTrigger className="w-[180px]">
+                        <SelectTrigger className="w-[180px] cursor-pointer">
                             <SelectValue placeholder="Select a method" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
                                 <SelectLabel>Methods</SelectLabel>
-                                <SelectItem value="pdf">{"pdf (coming soon)"}</SelectItem>
+                                {/* <SelectItem value="pdf">{"pdf (coming soon)"}</SelectItem> Security by design */} 
                                 <SelectItem value="txt">txt</SelectItem>
                                 <SelectItem value="manual">Manually</SelectItem>
                             </SelectGroup>
@@ -302,39 +316,87 @@ const processAllMails = async (list: {
                     {
                         message === "Task completed" ? 
                         // table
-                        <Table className={styles.productTitleIcon}>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-[100px]">Name</TableHead>
-                                    <TableHead>Company</TableHead>
-                                    <TableHead>Naf</TableHead>
-                                    <TableHead>Siret</TableHead>
-                                    <TableHead>Found Company</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {dataMails.map((item: any) => (
-                                <TableRow key={item.siret}>
-                                    <TableCell className="font-medium">{item.name}</TableCell>
-                                    <TableCell>{item.company}</TableCell>
-                                    <TableCell>{item.naf}</TableCell>
-                                    <TableCell>{item.siret}</TableCell>
-                                    <TableCell>{item.denominationUniteLegale}</TableCell>
-                                </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                        <>
+                            <Table className={styles.productTitleIcon}>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="w-[100px]">Name</TableHead>
+                                        <TableHead>Company</TableHead>
+                                        <TableHead>Naf</TableHead>
+                                        <TableHead>Siret</TableHead>
+                                        <TableHead>Siren</TableHead>
+                                        <TableHead>Found Company</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {dataMails.map((item: any, index: number) => (
+                                        <TableRow key={index}>
+                                            <TableCell className="font-medium">{item.name}</TableCell>
+                                            <TableCell>{item.company || "Not found"}</TableCell>
+                                            <TableCell>{item.naf || "Not found"}</TableCell>
+                                            <TableCell>{item.siret || "Not found"}</TableCell>
+                                            <TableCell>{item.siren || "Not found"}</TableCell>
+                                            <TableCell>{item.denominationUniteLegale || "Not found"}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                            <Button variant='outline' size="icon" className="size-8 absolute top-2 right-2 cursor-pointer" onClick={handleResetClick}>
+                                <XCircle />
+                                <span className="sr-only">Reset</span>
+                            </Button>
+                        </>
                         :
                         <>
                             {textHandlingUI()}
                             {buttonHandlingUI()}
                         </>
                     }
+                    {(message === "" && selectedFile !== null) && (
+                        <Button variant='outline' size="icon" className="size-8 absolute top-2 right-2 cursor-pointer" onClick={handleResetClick}>
+                            <XCircle />
+                            <span className="sr-only">Reset</span>
+                        </Button>
+                    )}
                     
                     
                 </div>
-                {message === 'Task completed' && <Button variant="outline" className={styles.productButtonEnter} onClick={() => downloadFile(dataMails)}>Download CSV</Button>}
             </div>
+            {message === 'Task completed' && 
+            
+            <Collapsible
+                open={isOpen}
+                onOpenChange={setIsOpen}
+                className="flex w-[100%] max-w-[350px] flex-col gap-2 mt-2 border border-gray-200 rounded-md p-1 bg-[#9bcdff]"
+                >
+                <div className="flex items-center justify-between gap-4 px-4">
+                    <h3 className="text-md font-semibold">
+                        Download data
+                    </h3>
+                    <CollapsibleTrigger asChild>
+                        <Button variant="ghost" size="icon" className="size-8 cursor-pointer">
+                            <ChevronsUpDown />
+                            <span className="sr-only">Toggle</span>
+                        </Button>
+                    </CollapsibleTrigger>
+                </div>
+                
+                <CollapsibleContent className="flex flex-col gap-1">
+                    <Button variant="outline" className={styles.productButtonDownload} onClick={() => {downloadFile(dataMails, "csv")}}>
+                        Download CSV
+                        <DownloadIcon className="w-4 h-4 ml-1" />
+                    </Button>
+                    <Button variant="outline" className={styles.productButtonDownload} onClick={() => {downloadFile(dataMails, "json")}}>
+                        Download JSON
+                        <DownloadIcon className="w-4 h-4 ml-1" />
+                    </Button>
+                    <Button variant="outline" className={styles.productButtonDownload} onClick={() => {downloadFile(dataMails, "xlsx")}}>
+                        Download XLSX
+                        <DownloadIcon className="w-4 h-4 ml-1" />
+                    </Button>
+                </CollapsibleContent>
+            </Collapsible>
+            }
         </div>
 
 
@@ -342,9 +404,6 @@ const processAllMails = async (list: {
         {/* Additional details */}
         
 
-        <div className={styles.lightOne}></div>
-        <div className={styles.lightTwo}></div>
-        <div className={styles.lightThree}></div>
         <div className={styles.lightFour}></div>
         <div className={styles.lightFive}></div>
     </div>
