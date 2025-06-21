@@ -65,7 +65,7 @@ export default function Main() {
         
         try {
             responseData = responseText ? JSON.parse(responseText) : {};
-        } catch (e) {
+        } catch (_) {
             console.error('Failed to parse response as JSON:', responseText);
             setMessage('Failed task, try later.')
             throw new Error(`Invalid response format: ${responseText.substring(0, 100)}...`);
@@ -102,7 +102,7 @@ const processAllMails = async (list: {
     domain: string;
     company: string;
 }[]) => {
-    let dataMails = [];
+    const dataMails = [];
     for (const mail of list) {
         const dataCurr = await searchCompany(mail.company);
         const dataCurrSorted = {...selectData({name: mail.name, company: mail.company, ...dataCurr})};
@@ -140,10 +140,10 @@ const processAllMails = async (list: {
             
             console.log("Companies processed:", data);
         }
-    } catch (err) {
+    } catch (_) {
         setMessage("")
         setIsProcessing(false);
-        console.log("An error occured please try again.");
+        console.error("An error occured please try again.");
     }
   };
 
@@ -332,11 +332,11 @@ const processAllMails = async (list: {
                                     {dataMails.map((item: any, index: number) => (
                                         <TableRow key={index}>
                                             <TableCell className="font-medium">{item.name}</TableCell>
-                                            <TableCell>{item.company || "Not found"}</TableCell>
-                                            <TableCell>{item.naf || "Not found"}</TableCell>
-                                            <TableCell>{item.siret || "Not found"}</TableCell>
-                                            <TableCell>{item.siren || "Not found"}</TableCell>
-                                            <TableCell>{item.denominationUniteLegale || "Not found"}</TableCell>
+                                            <TableCell>{item.company === "" ? "Not found" : item.company}</TableCell>
+                                            <TableCell>{item.naf === "" ? "Not found" : item.naf}</TableCell>
+                                            <TableCell>{item.siret === "" ? "Not found" : item.siret}</TableCell>
+                                            <TableCell>{item.siren === "" ? "Not found" : item.siren}</TableCell>
+                                            <TableCell>{item.denominationUniteLegale === "" ? "Not found" : item.denominationUniteLegale}</TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>

@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
 
-export const downloadFile = (data: Object[], method: "csv" | "json" | "xlsx") => {
+export const downloadFile = (data: object[], method: "csv" | "json" | "xlsx") => {
 
     if (method === "csv") {
         const csvRows = data.map((item: any) => Object.values(item));

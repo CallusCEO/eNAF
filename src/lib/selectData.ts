@@ -1,5 +1,18 @@
-export const selectData = (data: any) => {
-    const etablissement = data.etablissements[0]
+interface Etablissement {
+    siret: string;
+    siren: string;
+    uniteLegale: {
+        denominationUniteLegale: string;
+        activitePrincipaleUniteLegale: string;
+    };
+}
+
+export const selectData = (data: {
+    name: string;
+    company: string;
+    etablissements: Etablissement[]
+}): any => {
+    const etablissement = data.etablissements[0];
     return {
         name: data.name,
         company: data.company,
@@ -7,5 +20,5 @@ export const selectData = (data: any) => {
         siren: etablissement.siren,
         naf: etablissement.uniteLegale.activitePrincipaleUniteLegale,
         siret: etablissement.siret
-    }
+    };
 }

@@ -67,22 +67,22 @@ export async function GET(request: Request): Promise<NextResponse<CompanySearchR
     } catch (error) {
         // Log the error but return a sample data object with all fields null
         console.error(`Error searching for "${companyName}":`, error);
-        const sampleData: CompanySearchResponse = {
+        const sampleData: Partial<CompanySearchResponse> = {
             header: {
-                statut: null as any, // 'as any' to allow null in number field
-                message: null as any
+                statut: 200,
+                message: ""
             },
             etablissements: [
                 {
-                    siren: null as any,
-                    siret: null as any,
+                    siren: "",
+                    siret: "",
                     uniteLegale: {
-                        denominationUniteLegale: null as any,
-                        activitePrincipaleUniteLegale: null as any
+                        denominationUniteLegale: "",
+                        activitePrincipaleUniteLegale: ""
                     }
                 }
             ],
-            error: undefined
+            error: ""
         };
         return NextResponse.json(sampleData);
     }
