@@ -4,4 +4,5 @@ export interface DataType {
     company: string;
     naf: string;
     name: string;
+    denominationUniteLegale: string;
 }

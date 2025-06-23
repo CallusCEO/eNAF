@@ -36,6 +36,7 @@ import {
   } from "@/components/ui/collapsible"
 import { selectData } from "@/lib/selectData";
 import { downloadFile } from "@/lib/downloadFile";
+import { DataType } from "@/types/DataType";
 
 
 export default function Main() {
@@ -45,7 +46,7 @@ export default function Main() {
   const [method, setMethod] = useState<string | null>("txt");
 
   const [email, setEmail] = useState<string>("");
-  const [dataMails, setDataMails] = useState<any>([]);
+  const [dataMails, setDataMails] = useState<DataType[]>([]);
 
   //state for animation
   const [isProcessing, setIsProcessing] = useState(false);
@@ -329,7 +330,7 @@ const processAllMails = async (list: {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {dataMails.map((item: any, index: number) => (
+                                    {dataMails.map((item: DataType, index) => (
                                         <TableRow key={index}>
                                             <TableCell className="font-medium">{item.name}</TableCell>
                                             <TableCell>{item.company === "" ? "Not found" : item.company}</TableCell>

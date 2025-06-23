@@ -1,3 +1,5 @@
+import { DataType } from "@/types/DataType";
+
 interface Etablissement {
     siret: string;
     siren: string;
@@ -11,7 +13,7 @@ export const selectData = (data: {
     name: string;
     company: string;
     etablissements: Etablissement[]
-}): any => {
+}): DataType => {
     const etablissement = data.etablissements[0];
     return {
         name: data.name,

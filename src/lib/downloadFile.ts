@@ -1,9 +1,10 @@
 import * as XLSX from "xlsx";
+import { DataType } from "@/types/DataType";
 
-export const downloadFile = (data: object[], method: "csv" | "json" | "xlsx") => {
+export const downloadFile = (data: DataType[], method: "csv" | "json" | "xlsx") => {
 
     if (method === "csv") {
-        const csvRows = data.map((item: any) => Object.values(item));
+        const csvRows = data.map((item: DataType) => Object.values(item));
         const csvContent = [
             Object.keys(data[0]).join(","),
             ...csvRows.map((row) => row.join(","))
