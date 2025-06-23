@@ -103,7 +103,7 @@ const processAllMails = async (list: {
     domain: string;
     company: string;
 }[]) => {
-    const dataMails = [];
+    const dataMails = []; 
     for (const mail of list) {
         const dataCurr = await searchCompany(mail.company);
         const dataCurrSorted = {...selectData({name: mail.name, company: mail.company, ...dataCurr})};
@@ -134,8 +134,28 @@ const processAllMails = async (list: {
 
             const mailsArr = processTextToEmail(fileContent);
             const mailsArrCutToCompany = mailsArr.map((mail) => sliceEmail(mail));
-            const data = await processAllMails(mailsArrCutToCompany);
-            setDataMails(data);
+
+            let data: DataType[] = [];
+
+            while (mailsArrCutToCompany.length > 0) {
+                const mailsArrToProcess = mailsArrCutToCompany.splice(0, 30); // take first 30
+                const result = await processAllMails(mailsArrToProcess);
+                data.push(...result);
+                setDataMails(data);
+            
+                if (mailsArrCutToCompany.length > 0) {
+                    setMessage("60s before next batch");
+                    let seconds = 60;
+                    const intervalId = setInterval(() => {
+                        setMessage(`${seconds--}s before next batch`);
+                    }, 1000);
+                    await new Promise((resolve) => setTimeout(() => {
+                        clearInterval(intervalId);
+                        resolve(null);
+                    }, 60000));
+                }
+            }
+
             setIsProcessing(false);
             setMessage("Task completed")
             
