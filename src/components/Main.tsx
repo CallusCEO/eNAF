@@ -66,8 +66,8 @@ export default function Main() {
         
         try {
             responseData = responseText ? JSON.parse(responseText) : {};
-        } catch (_) {
-            console.error('Failed to parse response as JSON:', responseText);
+        } catch (err) {
+            console.error('Failed to parse response as JSON:', responseText + " " + err);
             setMessage('Failed task, try later.')
             throw new Error(`Invalid response format: ${responseText.substring(0, 100)}...`);
         }
@@ -141,10 +141,10 @@ const processAllMails = async (list: {
             
             console.log("Companies processed:", data);
         }
-    } catch (_) {
+    } catch (err) {
         setMessage("")
         setIsProcessing(false);
-        console.error("An error occured please try again.");
+        console.error("An error occured please try again: " + err);
     }
   };
 
@@ -353,7 +353,7 @@ const processAllMails = async (list: {
                             {buttonHandlingUI()}
                         </>
                     }
-                    {(message === "" && selectedFile !== null) && (
+                    {(message === "" || message === "Failed task, try later.") && selectedFile !== null && (
                         <Button variant='outline' size="icon" className="size-8 absolute top-2 right-2 cursor-pointer" onClick={handleResetClick}>
                             <XCircle />
                             <span className="sr-only">Reset</span>
