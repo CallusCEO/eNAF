@@ -145,7 +145,7 @@ const processAllMails = async (list: {
             
                 if (mailsArrCutToCompany.length > 0) {
                     setMessage("60s before next batch");
-                    let seconds = 60;
+                    let seconds = 59;
                     const intervalId = setInterval(() => {
                         setMessage(`${seconds--}s before next batch`);
                     }, 1000);
