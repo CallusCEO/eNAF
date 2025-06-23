@@ -138,7 +138,7 @@ const processAllMails = async (list: {
             const data: DataType[] = [];
 
             while (mailsArrCutToCompany.length > 0) {
-                const mailsArrToProcess = mailsArrCutToCompany.splice(0, 30); // take first 30
+                const mailsArrToProcess = mailsArrCutToCompany.splice(0, 29); // take first 30
                 const result = await processAllMails(mailsArrToProcess);
                 data.push(...result);
                 setDataMails(data);
