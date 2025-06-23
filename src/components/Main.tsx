@@ -217,7 +217,7 @@ const processAllMails = async (list: {
   const textHandlingUI = () => {
 
     if (isProcessing && !message) {
-        return <Text variant='shine' className={styles.productTextBody + ' ' + styles.productTitleIcon}>Your {checkEmail(email) ? "email" : "file"} is being processed...</Text>;
+        return <Text variant='shine' className={styles.productTextBodyProcessing}>Your {checkEmail(email) ? "email" : "file"} is being processed...</Text>;
     }
 
     else if (message) {
@@ -225,7 +225,7 @@ const processAllMails = async (list: {
             <Text
                 key={message} // This will force a re-mount when message changes
                 variant='shine'
-                className={styles.productTextBody + ' ' + styles.productTitleIcon}
+                className={styles.productTextBodyProcessing}
             >
                 {message}
             </Text>
