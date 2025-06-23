@@ -189,7 +189,7 @@
     opacity: 0;
     animation: 1s ease enter forwards;
     margin: 0 auto;
-    width: 100%;
+    width: 95%;
 }
 
 .productBodyInputContainer {
@@ -262,7 +262,7 @@
     }
 
     .productButtonDownload:hover {
-        background-color: #9bcdff;
+        background-color: #cae4ff;
     }
 }
 
