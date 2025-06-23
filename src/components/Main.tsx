@@ -135,7 +135,7 @@ const processAllMails = async (list: {
             const mailsArr = processTextToEmail(fileContent);
             const mailsArrCutToCompany = mailsArr.map((mail) => sliceEmail(mail));
 
-            let data: DataType[] = [];
+            const data: DataType[] = [];
 
             while (mailsArrCutToCompany.length > 0) {
                 const mailsArrToProcess = mailsArrCutToCompany.splice(0, 30); // take first 30
