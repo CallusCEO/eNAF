@@ -4,7 +4,7 @@ import styles from "@/styles/Main.module.css";
 import { Text } from "./ui/luxe/text";
 import { ArrowDown, ChevronsUpDown, DownloadIcon } from "lucide-react";
 import {Email, File, Flag, Terminal, Info, XCircle } from "@deemlol/next-icons";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import {
     Select,
     SelectContent,
@@ -194,6 +194,8 @@ const processAllMails = async (list: {
 
   const readFile = async () => {
     setMessage("");
+    console.log(calls)
+    callsRef.current = 0;
     setCalls(0);
     try {
         if (checkEmail(email)) {
