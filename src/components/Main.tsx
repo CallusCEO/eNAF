@@ -67,8 +67,27 @@ export default function Main() {
     setCalls(callsRef.current);
   }
 
+  // wait for 60s and resets calls
+  const resetCalls = async (secondChance: boolean = false) => {
+    if (callsRef.current >= 29) {
+        setMessage("60s before next batch");
+        let seconds = 59;
+        const intervalId = setInterval(() => {
+            setMessage(`${seconds--}s before next batch`);
+        }, 1000);
+        await new Promise((resolve) => setTimeout(() => {
+            clearInterval(intervalId);
+            resolve(null);
+        }, 60000));
+        callsRef.current = 0;
+        setCalls(0);
 
-
+        // optional
+        if (secondChance) {
+            setMessage("Searching again...")
+        }
+    }
+  }
 
   // Call the API with enhanced error handling
   const searchCompany = async (companyName: string) => {
@@ -139,21 +158,7 @@ const processAllSecondChance = async (list: {
             console.log(`i = ${i} and condition = ${mail.company.length + i !== 0} calls = `, callsRef.current);
             const dataCurr = await searchCompany(mail.company.slice(0, i));
 
-            
-            if (callsRef.current >= 29) {
-                setMessage("60s before next batch");
-                let seconds = 59;
-                const intervalId = setInterval(() => {
-                    setMessage(`${seconds--}s before next batch`);
-                }, 1000);
-                await new Promise((resolve) => setTimeout(() => {
-                    clearInterval(intervalId);
-                    resolve(null);
-                }, 60000));
-                callsRef.current = 0;
-                setCalls(0);
-                setMessage("Searching again...")
-            }
+            resetCalls(true);
 
             dataCurrSorted = selectData({name: mail.name, company: mail.company, ...dataCurr});
             if (dataCurr?.header?.message !== "not found") {
@@ -193,10 +198,16 @@ const processAllMails = async (list: {
 }
 
   const readFile = async () => {
+    // clean all
+    setSecondChanceArrState([]);
+    setDataMails([]);
     setMessage("");
-    console.log(calls)
     callsRef.current = 0;
     setCalls(0);
+
+
+    console.log(calls)
+
     try {
         if (checkEmail(email)) {
             setIsProcessing(true);
@@ -232,40 +243,16 @@ const processAllMails = async (list: {
                 setSecondChanceArrState((prev) => [...prev, ...secondChanceArr]);
                 setDataMails(data);
             
-                if (mailsArrCutToCompany.length > 0 || callsRef.current >= 29) {
-                    setMessage("60s before next batch");
-                    let seconds = 59;
-                    const intervalId = setInterval(() => {
-                        setMessage(`${seconds--}s before next batch`);
-                    }, 1000);
-                    await new Promise((resolve) => setTimeout(() => {
-                        clearInterval(intervalId);
-                        resolve(null);
-                    }, 60000));
-                    callsRef.current = 0;
-                    setCalls(0);
-                }
-                
+                resetCalls();
             }
 
-            while (secondChanceArrState.length > 0) {
-                const mailsArrToProcess = secondChanceArrState.splice(0, 29); // take first 30
+            const tempArr = [...secondChanceArrState];
+            while (tempArr.length > 0) {
+                const mailsArrToProcess = tempArr.splice(0, 29); // take first 30
                 const data = await processAllSecondChance(mailsArrToProcess);
                 setDataMails((prev) => [...prev, ...data]);
             
-                if (secondChanceArrState.length > 0 || callsRef.current >= 29) {
-                    setMessage("60s before next batch");
-                    let seconds = 59;
-                    const intervalId = setInterval(() => {
-                        setMessage(`${seconds--}s before next batch`);
-                    }, 1000);
-                    await new Promise((resolve) => setTimeout(() => {
-                        clearInterval(intervalId);
-                        resolve(null);
-                    }, 60000));
-                    callsRef.current = 0;
-                    setCalls(0);
-                }
+                resetCalls();
                 
             }
 
@@ -384,6 +371,7 @@ const processAllMails = async (list: {
         fileInputRef.current.value = "" 
     }
   }
+
   return (
     <div className={styles.container}>
         <Text variant="generate-effect" className={styles.title}>Insert a mail</Text>
