@@ -158,7 +158,7 @@ const processAllSecondChance = async (list: {
             console.log(`i = ${i} and condition = ${mail.company.length + i !== 0} calls = `, callsRef.current);
             const dataCurr = await searchCompany(mail.company.slice(0, i));
 
-            resetCalls(true);
+            await resetCalls(true);
 
             dataCurrSorted = selectData({name: mail.name, company: mail.company, ...dataCurr});
             if (dataCurr?.header?.message !== "not found") {
@@ -243,7 +243,7 @@ const processAllMails = async (list: {
                 setSecondChanceArrState((prev) => [...prev, ...secondChanceArr]);
                 setDataMails(data);
             
-                resetCalls();
+                await resetCalls();
             }
 
             const tempArr = [...secondChanceArrState];
@@ -252,7 +252,7 @@ const processAllMails = async (list: {
                 const data = await processAllSecondChance(mailsArrToProcess);
                 setDataMails((prev) => [...prev, ...data]);
             
-                resetCalls();
+                await resetCalls();
                 
             }
 
