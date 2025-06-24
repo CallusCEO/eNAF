@@ -190,10 +190,6 @@ const processAllMails = async (list: {
             dataMails.push(dataCurrSorted);
         }
     }
-    if (secondChanceArr.length > 0) {
-        const secondRunData = await processAllSecondChance(secondChanceArr);
-        dataMails.push(...secondRunData);
-    }
     return {dataMails, secondChanceArr};
 }
 
