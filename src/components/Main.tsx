@@ -69,23 +69,21 @@ export default function Main() {
 
   // wait for 60s and resets calls
   const resetCalls = async (secondChance: boolean = false) => {
-    if (callsRef.current >= 29) {
-        setMessage("60s before next batch");
-        let seconds = 59;
-        const intervalId = setInterval(() => {
-            setMessage(`${seconds--}s before next batch`);
-        }, 1000);
-        await new Promise((resolve) => setTimeout(() => {
-            clearInterval(intervalId);
-            resolve(null);
-        }, 60000));
-        callsRef.current = 0;
-        setCalls(0);
+    setMessage("60s before next batch");
+    let seconds = 59;
+    const intervalId = setInterval(() => {
+        setMessage(`${seconds--}s before next batch`);
+    }, 1000);
+    await new Promise((resolve) => setTimeout(() => {
+        clearInterval(intervalId);
+        resolve(null);
+    }, 60000));
+    callsRef.current = 0;
+    setCalls(0);
 
-        // optional
-        if (secondChance) {
-            setMessage("Searching again...")
-        }
+    // optional
+    if (secondChance) {
+        setMessage("Searching again...")
     }
   }
 
@@ -158,7 +156,9 @@ const processAllSecondChance = async (list: {
             console.log(`i = ${i} and condition = ${mail.company.length + i !== 0} calls = `, callsRef.current);
             const dataCurr = await searchCompany(mail.company.slice(0, i));
 
-            await resetCalls(true);
+            if (callsRef.current >= 29) {
+                await resetCalls(true);
+            }
 
             dataCurrSorted = selectData({name: mail.name, company: mail.company, ...dataCurr});
             if (dataCurr?.header?.message !== "not found") {
@@ -242,8 +242,10 @@ const processAllMails = async (list: {
                 data.push(...dataMails);
                 setSecondChanceArrState((prev) => [...prev, ...secondChanceArr]);
                 setDataMails(data);
-            
-                await resetCalls();
+                
+                if (callsRef.current >= 29) {
+                    await resetCalls();
+                }
             }
 
             const tempArr = [...secondChanceArrState];
@@ -251,9 +253,10 @@ const processAllMails = async (list: {
                 const mailsArrToProcess = tempArr.splice(0, 29); // take first 30
                 const data = await processAllSecondChance(mailsArrToProcess);
                 setDataMails((prev) => [...prev, ...data]);
-            
-                await resetCalls();
                 
+                if (callsRef.current >= 29) {
+                    await resetCalls();
+                }
             }
 
             setIsProcessing(false);
