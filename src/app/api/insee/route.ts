@@ -70,7 +70,7 @@ export async function GET(request: Request): Promise<NextResponse<CompanySearchR
         const sampleData: Partial<CompanySearchResponse> = {
             header: {
                 statut: 200,
-                message: ""
+                message: "not found"
             },
             etablissements: [
                 {

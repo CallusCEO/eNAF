@@ -1,24 +1,28 @@
 .container {
     display: flex;
     align-items: center;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.3);
     color: var(--foreground);
     padding: 8px 0;
     justify-content: center;
 
-    border-bottom: 1px dashed #bbb;
+    border: 2px dashed #bbb;
+    border-radius: 40px;
 
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
 
     position: fixed;
-    top: 0;
-    left: 0;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
     right: 0;
     z-index: 999;
 
     gap: 8px;
+    width: clamp(224px, 90vw, 264px);
+    transition: width 0.3s ease;
+    box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.1);
 }
 
 .title {
@@ -33,4 +37,10 @@
 
 .logo {
     border-radius: 50%;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .container:hover {
+        width: clamp(264px, 90vw, 324px);
+    }
 }

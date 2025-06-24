@@ -4,7 +4,7 @@ import styles from "@/styles/Main.module.css";
 import { Text } from "./ui/luxe/text";
 import { ArrowDown, ChevronsUpDown, DownloadIcon } from "lucide-react";
 import {Email, File, Flag, Terminal, Info, XCircle } from "@deemlol/next-icons";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
     Select,
     SelectContent,
@@ -37,6 +37,7 @@ import {
 import { selectData } from "@/lib/selectData";
 import { downloadFile } from "@/lib/downloadFile";
 import { DataType } from "@/types/DataType";
+import { toProperName } from "@/lib/toProperName";
 
 
 export default function Main() {
@@ -45,8 +46,14 @@ export default function Main() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [method, setMethod] = useState<string | null>("txt");
 
+  
   const [email, setEmail] = useState<string>("");
   const [dataMails, setDataMails] = useState<DataType[]>([]);
+  const [secondChanceArrState, setSecondChanceArrState] = useState<{name: string; domain: string; company: string;}[]>([]);
+
+  // tracks calls   
+  const [calls, setCalls] = useState(0);
+  const callsRef = useRef(0);
 
   //state for animation
   const [isProcessing, setIsProcessing] = useState(false);
@@ -54,11 +61,20 @@ export default function Main() {
   const [isOpen, setIsOpen] = useState(true)
 
 
+  // increment the calls
+  const incrementCalls = (n: number) => {
+    callsRef.current += n;
+    setCalls(callsRef.current);
+  }
+
+
+
+
   // Call the API with enhanced error handling
   const searchCompany = async (companyName: string) => {
     try {
-        setMessage(`Fetching data for ${companyName.charAt(0).toUpperCase() + companyName.slice(1)}`);
-        const response = await fetch(`/api/insee?companyName=${companyName}`);
+        incrementCalls(1);
+        const response = await fetch(`/api/insee?companyName=${encodeURIComponent(companyName)}`);
         
         // Get the response text first to handle both JSON and text responses
         const responseText = await response.text();
@@ -98,30 +114,100 @@ export default function Main() {
     }
 };
 
+const processAllSecondChance = async (list: {
+    name: string;
+    domain: string;
+    company: string;
+}[]) => {
+    const dataMails = []; 
+    
+    for (const mail of list) {
+        let i = 0;
+        let dataCurrSorted: DataType = {
+            name: mail.name,
+            company: mail.company,
+            denominationUniteLegale: "",
+            siren: "",
+            naf: "",
+            siret: ""
+        };
+        setMessage(`Deep search for ${toProperName(mail.company)}...`)
+        
+        while (mail.company.length + i !== 0) {
+            i--;
+            // Always display 0 --> The starting value
+            console.log(`i = ${i} and condition = ${mail.company.length + i !== 0} calls = `, callsRef.current);
+            const dataCurr = await searchCompany(mail.company.slice(0, i));
+
+            
+            if (callsRef.current >= 29) {
+                setMessage("60s before next batch");
+                let seconds = 59;
+                const intervalId = setInterval(() => {
+                    setMessage(`${seconds--}s before next batch`);
+                }, 1000);
+                await new Promise((resolve) => setTimeout(() => {
+                    clearInterval(intervalId);
+                    resolve(null);
+                }, 60000));
+                callsRef.current = 0;
+                setCalls(0);
+                setMessage("Searching again...")
+            }
+
+            dataCurrSorted = selectData({name: mail.name, company: mail.company, ...dataCurr});
+            if (dataCurr?.header?.message !== "not found") {
+                break;
+            }
+        }
+        dataMails.push(dataCurrSorted);
+    }
+    return dataMails;
+}
+
 const processAllMails = async (list: {
     name: string;
     domain: string;
     company: string;
 }[]) => {
     const dataMails = []; 
+    const secondChanceArr = [];
     for (const mail of list) {
+        setMessage(`Fetching data for ${toProperName(mail.company)}`);
         const dataCurr = await searchCompany(mail.company);
-        const dataCurrSorted = {...selectData({name: mail.name, company: mail.company, ...dataCurr})};
-        dataMails.push(dataCurrSorted);
+        // Always display 0 --> The starting value
+        console.log(`Calls in processAllMails: `, callsRef.current)
+        if (dataCurr?.header?.message === "not found") {
+            secondChanceArr.push(mail);
+        } 
+        else {
+            const dataCurrSorted = selectData({name: mail.name, company: mail.company, ...dataCurr});
+            dataMails.push(dataCurrSorted);
+        }
     }
-    return dataMails;
+    if (secondChanceArr.length > 0) {
+        const secondRunData = await processAllSecondChance(secondChanceArr);
+        dataMails.push(...secondRunData);
+    }
+    return {dataMails, secondChanceArr};
 }
 
   const readFile = async () => {
-    setMessage("")
+    setMessage("");
+    setCalls(0);
     try {
         if (checkEmail(email)) {
             setIsProcessing(true);
-            const data = await processAllMails([sliceEmail(email)]); // to modify
+            const {dataMails, secondChanceArr} = await processAllMails([sliceEmail(email)]);
+            if (secondChanceArr.length > 0) {
+                const secondRunData = await processAllSecondChance(secondChanceArr);
+                dataMails.push(...secondRunData);
+            }
             setIsProcessing(false);
+            setCalls(0);
             setMessage("Task completed")
-            setDataMails(data);
-            console.log("Companies processed:", data);
+            setDataMails(dataMails);
+            console.log("Companies processed:", dataMails);
 
         } else if (selectedFile !== null) {
             setIsProcessing(true);
@@ -139,11 +225,12 @@ const processAllMails = async (list: {
 
             while (mailsArrCutToCompany.length > 0) {
                 const mailsArrToProcess = mailsArrCutToCompany.splice(0, 29); // take first 30
-                const result = await processAllMails(mailsArrToProcess);
-                data.push(...result);
+                const {dataMails, secondChanceArr} = await processAllMails(mailsArrToProcess);
+                data.push(...dataMails);
+                setSecondChanceArrState((prev) => [...prev, ...secondChanceArr]);
                 setDataMails(data);
             
-                if (mailsArrCutToCompany.length > 0) {
+                if (mailsArrCutToCompany.length > 0 || callsRef.current >= 29) {
                     setMessage("60s before next batch");
                     let seconds = 59;
                     const intervalId = setInterval(() => {
@@ -153,12 +240,36 @@ const processAllMails = async (list: {
                         clearInterval(intervalId);
                         resolve(null);
                     }, 60000));
+                    callsRef.current = 0;
+                    setCalls(0);
                 }
+                
+            }
+
+            while (secondChanceArrState.length > 0) {
+                const mailsArrToProcess = secondChanceArrState.splice(0, 29); // take first 30
+                const data = await processAllSecondChance(mailsArrToProcess);
+                setDataMails((prev) => [...prev, ...data]);
+            
+                if (secondChanceArrState.length > 0 || callsRef.current >= 29) {
+                    setMessage("60s before next batch");
+                    let seconds = 59;
+                    const intervalId = setInterval(() => {
+                        setMessage(`${seconds--}s before next batch`);
+                    }, 1000);
+                    await new Promise((resolve) => setTimeout(() => {
+                        clearInterval(intervalId);
+                        resolve(null);
+                    }, 60000));
+                    callsRef.current = 0;
+                    setCalls(0);
+                }
+                
             }
 
             setIsProcessing(false);
             setMessage("Task completed")
-            
+            setCalls(0);
             console.log("Companies processed:", data);
         }
     } catch (err) {
@@ -388,7 +499,7 @@ const processAllMails = async (list: {
             <Collapsible
                 open={isOpen}
                 onOpenChange={setIsOpen}
-                className="flex w-[100%] max-w-[350px] flex-col gap-2 mt-2 border border-gray-200 rounded-md p-1 bg-[#9bcdff]"
+                className="flex w-[100%] max-w-[350px] flex-col gap-2 mt-5 border border-[#bbb] rounded-md p-3 "
                 >
                 <div className="flex items-center justify-between gap-4 px-4">
                     <h3 className="text-md font-semibold">
