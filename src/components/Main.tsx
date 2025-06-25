@@ -61,8 +61,8 @@ export default function Main() {
 
 	// wait for 60s and resets calls
 	const resetCalls = async (secondChance: boolean = false) => {
-		setMessage('60s before next batch');
-		let seconds = 59;
+		setMessage('57s before next batch');
+		let seconds = 56;
 		const intervalId = setInterval(() => {
 			setMessage(`${seconds--}s before next batch`);
 		}, 1000);
@@ -70,7 +70,7 @@ export default function Main() {
 			setTimeout(() => {
 				clearInterval(intervalId);
 				resolve(null);
-			}, 60000)
+			}, 57000)
 		);
 		callsRef.current = 0;
 		setCalls(0);
@@ -157,7 +157,7 @@ export default function Main() {
 				);
 				const dataCurr = await searchCompany(mail.company.slice(0, i));
 
-				if (callsRef.current >= 29) {
+				if (callsRef.current >= 30) {
 					await resetCalls(true);
 				}
 
@@ -242,7 +242,7 @@ export default function Main() {
 					[];
 
 				while (mailsArrCutToCompany.length > 0) {
-					const mailsArrToProcess = mailsArrCutToCompany.splice(0, 29);
+					const mailsArrToProcess = mailsArrCutToCompany.splice(0, 30);
 					const { dataMails, secondChanceArr } = await processAllMails(mailsArrToProcess);
 
 					data.push(...dataMails);
@@ -250,18 +250,18 @@ export default function Main() {
 
 					setDataMails([...data]); // updates UI
 
-					if (callsRef.current >= 29) {
+					if (callsRef.current >= 30) {
 						await resetCalls();
 					}
 				}
 
 				while (secondChanceArrGlobal.length > 0) {
-					const mailsArrToProcess = secondChanceArrGlobal.splice(0, 29);
+					const mailsArrToProcess = secondChanceArrGlobal.splice(0, 30);
 					const secondRunData = await processAllSecondChance(mailsArrToProcess);
 					data.push(...secondRunData);
 					setDataMails([...data]);
 
-					if (callsRef.current >= 29) {
+					if (callsRef.current >= 30) {
 						await resetCalls();
 					}
 				}
