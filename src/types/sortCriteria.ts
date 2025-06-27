@@ -1,0 +1,1 @@
+export type SortCriteria = 'reliability' | 'company' | 'name' | 'denominationUniteLegale';

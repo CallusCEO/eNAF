@@ -80,7 +80,9 @@
     flex-direction: column;
 
     margin: 324px auto 64px;
-    width: clamp(264px, 80vw, 664px);
+    min-width: clamp(324px, 95vw, 624px);
+    max-width: 100%;
+    width: fit-content;
     z-index: 15;
 }
 
@@ -137,10 +139,7 @@
     border-top: none;
 
     padding: 0 8px;
-
-    max-height: 364px;
-    overflow-y: auto;
-
+    max-height: 564px;
     position: relative;
 }
 
@@ -174,6 +173,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.cellGreen {
+    color: #22cc22;
+}
+
+.cellYellow {
+    color: #b3b300;
+}
+
+.cellRed {
+    color: #cc2222;
 }
 
 .productButtonDownload {
@@ -220,6 +231,16 @@
 
 .validEmail {
     color: #66ff66;
+}
+
+.toolsContainer {
+    position: absolute;
+    right: -48px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #bbb;
+    border-radius: 20px;
+    height: fit-content;
 }
 
 /* Additional styles */

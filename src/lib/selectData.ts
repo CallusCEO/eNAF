@@ -12,12 +12,14 @@ interface Etablissement {
 export const selectData = (data: {
     name: string;
     company: string;
+    reliability: 'low' | 'medium' | 'high';
     etablissements: Etablissement[]
 }): DataType => {
     const etablissement = data.etablissements[0];
     return {
         name: data.name,
         company: data.company,
+        reliability: data.reliability,
         denominationUniteLegale: etablissement.uniteLegale.denominationUniteLegale,
         siren: etablissement.siren,
         naf: etablissement.uniteLegale.activitePrincipaleUniteLegale,
